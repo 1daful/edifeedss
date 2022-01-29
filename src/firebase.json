@@ -1,0 +1,10 @@
+{
+    "apiKey": "AIzaSyBj4r66t2hD0q9xI6GytrTS0UBg5RZgIrA",
+    "authDomain": "med-lte.firebaseapp.com",
+    "databaseURL": "https://med-lte.firebaseio.com",
+    "projectId":  "med-lte",
+    "storageBucket": "med-lte.appspot.com",
+    "messagingSenderId": "6919446903",
+    "appId": "1:6919446903:web:15e23a48e4a2453a"
+  }
+  
