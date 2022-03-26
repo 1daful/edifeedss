@@ -20,7 +20,8 @@ export class Axiosi implements ApiClient {
                 /*if (params) {
                     this.resource.setRequestParam(params);
                 }*/
-                const baseUrl = await this.resource.getBaseURL()
+                //const baseUrl = await this.resource.getBaseURL()
+                const baseUrl = this.resource.URL
                 //console.log('Axios baseUrl:', baseUrl)
                 this.config.params = await this.resource.getBaseParam();
                 NetworkLocal.test("Axios config: ", this.config.params)

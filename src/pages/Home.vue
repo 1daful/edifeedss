@@ -29,8 +29,9 @@ import SiteHero from "@/components/SiteHero.vue";
 import MediaComponent from "../components/MediaComponent.vue";
 import QOD from "../components/QOD.vue";
 import Genres from "../components/Genres.vue";
+import auth from "../api/auth/SupabaseAuth";
 
-let axios = new Axiosi();
+let client = new Axiosi();
 let site: Object;
 let pos = "main"
 
@@ -39,7 +40,8 @@ export default defineComponent({
   data() {
         return {
             site,
-            pos
+            pos,
+            auth
         }
     },
     components: {
@@ -50,9 +52,11 @@ export default defineComponent({
       Genres
     },
     mounted() {
-        axios.load("../config.json").then(resp => {
+        client.load("../config.json").then(resp => {
             if (resp) this.site = resp.data
         })
+        const sess = this.auth.startSession()
+        console.log("sess: ", sess)
     }
 })
 </script>

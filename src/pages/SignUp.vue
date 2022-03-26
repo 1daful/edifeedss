@@ -1,5 +1,5 @@
 <template>
-    <div :bgImg="bgImg" class="q-pa-md" :style="{background: url(bgImg)}">
+    <div :bgImg="bgImg" class="q-pa-md" :style="{background: url(bgImg)}" v-if="sign-up">
         <img :src="logo" />
         <div v-for="social in socials" :key="social.id">
             <q-btn :label="`Sign up with ${social.name}`" color="primary"/> 
@@ -15,10 +15,6 @@
             validation-name="Password" error-behavior="live" />
             <!--<q-input v-model="user.password" type="password" label="Password" />-->
             <ProgressBar v-if="passwordStrength.show" :meter="passwordStrength"></ProgressBar>
-            
-            <vue-recaptcha sitekey="" :loadRecaptchaScript="true" ref="recaptcha" @verify="onVerify">
-                <!--<q-checkbox v-model="ri" label="recap"/>-->
-            </vue-recaptcha>
 
             <!--Newsletter-->
             <q-checkbox v-model='user.newsletter'></q-checkbox>> <span>Send updates to my email address.</span>
@@ -27,20 +23,28 @@
             <p>By clicking sign up you have read and agreed to our <a :href="site.tosUrl">term of use</a> and <a :href="site.privacyPolicyUrl">privacy policy</a>.</p>
 
             <q-btn label="Sign up" type="submit" color="primary"></q-btn>
-        </FormulteForm>>
+        </FormulteForm>
         <p>Already have an account? <router-link to="/sign-in">Sign in</router-link></p>
+    </div>
+      <div v-else-if="verified">
+      <h4></h4>
+      <p>You have been sent a verification to your email address. Please check your email inbox to confirm your account.</p>
     </div>
 </template>
 
 <script>
-import VueRecaptcha from 'vue-recaptcha';
-
 import { FirebaseAuth } from "../api/auth/FirebaseAuth";
+import ProgressBar from "../components/ProgressBar.vue";
+import { MailjetFunc } from "../api/Email/MailjetFunc";
+import { MediaApi } from "../api/MediaApi";
+import { Repository } from "../model/Repository";
+
 let zxcvbn = require('zxcvbn');
-let firebase = new FirebaseSetUp();
-let firAuth = new FirebaseAuth(firebase.auth);
+//let firebase = new FirebaseSetUp();
+let firAuth = new FirebaseAuth();
 let api = new MailjetFunc();
 let mediaApi = new MediaApi(api);
+let db = new Repository()
 
 let auth = new FirebaseAuth()
 export default {
@@ -75,7 +79,6 @@ export default {
     },
 
     components: {
-        VueRecaptcha,
         ProgressBar
         },
     props: {
@@ -90,25 +93,17 @@ export default {
     },
     methods: {
         onSubmit() {
-            if(this.user.isRobot) {
+            /*if(this.user.isRobot) {
                 this.message = "Please check the box to verify you're human."
                 return;
-            }
-            if (!this.user.displayName) {
-                this.errors.displayNameEmpty = 'Username is required.'
-            }
-            if (!this.user.email) {
-                this.errors.emailEmpty = 'Email is required.';
+            }*/
+
+            if (this.passwordStrength.variant ==="danger") {
                 return
             }
-            if (!this.user.password) {
-                this.errors.passwordEmpty = 'Password is required.';
-                return
-            }
-            this.checkUsername();
             if (this.validEmail&&this.validPassword) {
-                firAuth.signUp(this.user.email, this.user.password, {displayName: this.user.displayName});
-                if (firAuth.authMessage.failed) {
+                auth.signUp(this.user.email, this.user.password, {displayName: this.user.displayName});
+                if (auth.authMessage.failed) {
                 this.errors.signUpErrMsg = firAuth.authMessage.signUpErrMsg;
                 }
                 else if (firAuth.authMessage.successful) {
@@ -121,19 +116,6 @@ export default {
                 this.verified = true;
                 }
             }
-        },
-        validEmail() {
-            let re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-            return re.test(this.user.email);
-        },
-        validPassword() {
-            if (this.user.password.length < 7) {
-                this.errors.passwordLengthErr = 'Your password is too short.';
-            }
-            else if (this.user.password.length > 128){
-                this.errors.passwordLengthErr = 'Your password is too long.'
-            }
-            return this.user.password.length > 7 && this.user.password.length < 128
         },
         setPasswordStrength() {
             let result = zxcvbn(this.user.password);
@@ -160,25 +142,11 @@ export default {
                 break;
             }
         },
-        checkUsername() {
-            let filters = {
-                fieldPath: "displayName",
-                op: "=",
-                value: this.user.displayName,
-            }
-            let users = db.readItems('users', filters);
-            users.forEach(user => {
-                if(this.user.displayName === user.displayName) {
-                this.errors.signUpErrMsg = 'Username has already been taken.';
-                return
-                }
-            });
-        },
-        onVerify(response) {
+        /*onVerify(response) {
             if (response) {
                 this.user.isRobot = true;
             }
-        }
+        }*/
     }
 }
 </script>

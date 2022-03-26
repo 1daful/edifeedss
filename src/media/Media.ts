@@ -2,7 +2,7 @@ import { MediaApi } from "../api/MediaApi.js";
 import { IMedia } from "./IMedia.js";
 import { IRepository } from "../model/IRepository.js";
 import { Repository } from "../model/Repository.js";
-import { NetworkLocal } from "@/api/network.js";
+//import { NetworkLocal } from "@/api/network.js";
 
 /**
  * Class Media acts as delegates for the media class instances' functions.
@@ -23,20 +23,20 @@ export class Media {
      * @param params 
      */
     async load(type: string, media: IMedia, params?: Record<string, any>) {
-        const mediaItems: Record<string, any>[] = [];
-        const result: Record<string, any> = {}
+        //const mediaItems: Record<string, any>[] = [];
+        //const result: Record<string, any> = {}
 
         try {
             for (const api of media.apis) {
                 const mediaApi: MediaApi = new MediaApi(api);
                 //mediaItems.push(mediaApi.getItems(type, params));
-                const name = mediaApi.api.constructor.name
-                NetworkLocal.test(`${name} good!`)
+                //const name = mediaApi.api.constructor.name
+                //NetworkLocal.test(`${name} good!`)
                 let items: any = []
                 items = await mediaApi.getItems(type, params)
                 if (items) {
-                    NetworkLocal.test(`This is item from Media load. ${items}`)
-                    console.log("this is item from Media load: ", items)
+                    //NetworkLocal.test(`This is item from Media load. ${items}`)
+                    //console.log("this is item from Media load: ", items)
                     await this.addItems(/*media.constructor.name*/ items);
                 }
             }
@@ -59,7 +59,7 @@ export class Media {
     private async addItems(items: Record<string, any>[]): Promise<Record<string, any>> {
         const result = {}
         try {
-            NetworkLocal.test("Adding items from Media")
+            //NetworkLocal.test("Adding items from Media")
             await this.repository.addItems(items);
         } 
         catch (err) {
@@ -70,16 +70,12 @@ export class Media {
     }
 
     async readItems(params?: string[], op?: Record<string, any>): Promise<Record<string, any>[]> {
-        const result: Record<string, any>[] = []
+        let result: Record<string, any>[] = []
         try {
-            const res: any = []
-            await res.push(NetworkLocal.test(`Reading items from Media: ${res}`))
-            console.log("tes: ", res)
-            return res
-            if (res) {
-                return res
-            }
-            return await this.repository.readItems(params, op);}
+            result = await this.readItems(params, op)
+            return result
+            
+        }
         catch (err) {
             console.log(err)
             console.log("Unable to load media")

@@ -1,54 +1,161 @@
 <template>
-    <div :bgImg="bgImg" class="q-pa-md" :style="{background: url(bgImg)}">
-        <div v-for="social in socials" :key="social.id">
-            <q-btn :label="`Sign in with ${social.name}`" color="primary"/> 
-        </div>
+    <div :bgImg="bgImg" class="q-pa-md" :style="{backgroundImage: `$url(${bgImg})`}">
+        <!--<img :src="logo" />-->
         <q-form @submit="onSubmit" class="q-gutter-md">
-            <q-input v-model="user.email" type="email" label="Email" />
-            <q-input v-model="user.password" type="password" label="Password" />
-            <router-link to="/password-recovery">Forget password?</router-link>
+          <!--Email---->
+            <q-input v-model="user.email" type="email" label="Email" lazy-rules :rules="rules.email"/>
+
+            <!--Password-->
+            <q-input v-model="user.password" type="password" label="Password" lazy-rules :rules="rules.password"/>
+
+            <router-link :to="{name: 'PasswordRecovery'}">Forget password?</router-link>
             <q-btn label="Sign in" type="submit" color="primary"></q-btn>
         </q-form>
-        <p>Don't have an account? <router-link to="/sign-up">Sign up</router-link></p>
+        
+        <div v-for="social in socials" :key="social.id">
+            <q-btn :icon="social.icon" :label="`Sign in with ${social.id}`" color="primary" @click="socialSignIn(social.id)"/> 
+        </div>
+        <div id="auth-ui">
+        </div>
+        <p>Don't have an account? <router-link to="/signup">Sign up</router-link></p>
     </div>
 </template>
 
-<script>
-import { FirebaseAuth } from "../api/auth/FirebaseAuth";
+<script lang="ts">
+import { defineComponent, ref } from "vue";
+import auth from "../api/auth/SupabaseAuth";
+//import { FirebaseAuth } from "../api/auth/FirebaseAuth";
+import {Axiosi} from "../api/Axiosi"
 
-let auth = new FirebaseAuth()
+let client = new Axiosi()
 
-export default {
+let socials: Record<string, any>
+
+//let auth = new FirebaseAuth()
+
+export default defineComponent({
     name: 'SignIn',
     data() {
+      const user = ref({
+        email: "",
+        password: ""
+      })
+
+      const emailRef = ref<any>(null)
+
+      //const passwordRef = ref(null)
+
         return {
+          emailRef,
+
+            client,
+            auth,
             socials,
-            user: {   
-                email: '',
-                password: ''
-            }
+            bgImg: "a",
+            user,
+            rules: {
+              email: [
+                (val: string|null) => (val !== null&&val !== '') || "Email is required",
+                (val: string) => {
+                  let re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                  return re.test(val) || "Please enter a valid email"
+                }
+            ],
+            password: [
+                (val: string|null) => (val !== null&&val !== '') || "Password is required",
+                (val: string) => val.length > 6 || "Password too short",
+                (val: string) => val.length < 129 || "Password too long"
+            ]
+            },
+          errors: {
+            passwordLengthErr: '',
+            signUpErrMsg: '',
+            email: "",
+            password: ""
+          },
+          errorList: []
         }
     },
     props: {
-        url: {
+        myUrl: {
             type: String,
             required: true
         },
-        /*login: {
+        /*logo: {
+            type: String,
+            required: true
+        },
+        login: {
             type: Boolean,
             required: true
         }*/
     },
+    computed: {
+        /*validPassword() {
+          console.log("this is the user", this.user)
+          console.log("this is gImg", this.bgImg)
+          if (this.user.password.length < 7&&this.user.password.length >0) {
+            return 'Your password is too short.';
+          }
+          else if (this.user.password.length > 128){
+            return 'Your password is too long.'
+          }
+
+          return "Password is required"
+        },
+        validEmail() {
+          let re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          if (this.user.email !== null) {
+            if(!re.test(this.user.email)) {
+              return "Please enter a valid email"
+            }
+          }
+          return 'Email address is required';
+        }*/
+    },
     methods: {
-        onSubmit() {
-            auth.logIn()
-            auth.getUser().then(() => {
-                this.$router.push({path: url})
-            });
-        }      
+        socialSignIn(id: string) {
+            this.auth.login(id)
+        },
+        async onSubmit() {
+          /*this.validate().then(() => {
+            if (this.errorList.length > 0) {
+              return
+            }
+          })*/
+          //this.emailRef.value.validate()
+            await this.auth.login(undefined, this.user)
+            /*if (error) {
+              this.errors.signUpErrMsg = error.message;
+            console.log('this.errors.signuperror: ', this.errors.signUpErrMsg)
+            console.log(user, session)
+            }*/
+            /*else {
+              this.$router.push({path: this.myUrl})
+            }*/
+          
+        },
+      async validate(): Promise<void> {
+        for(const error in this.errors) {
+          if (error) {
+            this.errorList.push()
+          }
+        }
+      },
+      onload() {
+        this.$emit("showHeader", true)
+      }
     },
     mounted() {
-        
+        this.client.load("../config.json").then(resp => {
+            if (resp) {
+                this.socials = resp.data.socials
+            }
+        })
+        this.onload()
+        //this.auth.startUI()
+        const sess = this.auth.startSession()
+        console.log("sess: ", sess)
     }
-}
+})
 </script>

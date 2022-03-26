@@ -1,11 +1,25 @@
-/*import { Resource } from "../Resource";
+import { Resource } from "../Resource";
 import { IMediaApi } from "../IMediaApi";
-import { Response } from "../Response";*/
+import { Response } from "../Response";
+import { ApiFormat } from "@/apiReqFormat/ApiFormat";
 
 /**
- * This is a concrete GoogleBooks class implementation of IMedia
+ * This is our transactional email implementation for Mailjet
  */
-/*export class MailjetFunc  implements IMediaApi{
+export class MailjetFunc  implements IMediaApi {
+    apiFormat: ApiFormat = new ApiFormat();
+    getBaseUrl() {
+        throw new Error("Method not implemented.");
+    }
+    getBaseParams() {
+        throw new Error("Method not implemented.");
+    }
+    getData(res: Record<string, any>): Record<string, any>[] {
+        const resi = []
+        resi.push(res)
+        return resi
+        //throw new Error("Method not implemented.");
+    }
     resources: Resource[] =[];
     BASE_URL = '/.netlify/functions';
     BASE_PARAMS!: {
@@ -13,7 +27,7 @@ import { Response } from "../Response";*/
         KEY: string
     }
 
-    getContactRes = new Resource('getContact',
+    getContactRes = new Resource(this, 'getContact',
         {
             name: 'getContactReq',
             baseUrl: '/get-contact',
@@ -24,7 +38,7 @@ import { Response } from "../Response";*/
         'getContactResp',
         
     )
-    postContactRes = new Resource('postContact',
+    postContactRes = new Resource(this, 'postContact',
         {
             name: 'postContactReq',
             baseUrl: '/post-contact',
@@ -73,4 +87,5 @@ import { Response } from "../Response";*/
             title: 'title',
             authors: 'authors',
         }
-    }*/
+    }
+}

@@ -1,6 +1,7 @@
 import { Request } from "./Request";
 import { Response } from "./Response";
 import { IMediaApi } from "./IMediaApi";
+import site from "../../public/config.json";
 //import { Utility } from "../Utility";
 /**
  * 
@@ -20,6 +21,7 @@ export class Resource {
     response: Response;
     //data!: Record<string, any>;
     api: IMediaApi;
+    URL = site.backURL
     //setResponse!: Function
 
     //util = new Utility()
@@ -80,7 +82,7 @@ export class Resource {
 
     getRequestParam(resData: Record<string, any>) {
         let newParam = '';
-        const param = resData; //Request parameters
+        //const param = resData; //Request parameters
         
         Object.keys(resData).forEach(key => {
             if (this.isObject(resData[key])){
@@ -95,11 +97,15 @@ export class Resource {
                         newParam = newParam + '&' + `${keyse[i]}:${resData[key][key2]}`
                     }
                     i++;
-                    param[key] =  newParam;
+                    resData[key] =  newParam;
                 })
             }
+            if (resData[key] === "") 
+            {
+                delete resData[key]
+            }
         });
-        return param
+        return resData
     }
 
     /*setResponseData() {
@@ -111,11 +117,13 @@ export class Resource {
      * @param type type of the resource to retrieve
      */
     async getBaseParam(){
-        const obj = {}
+        const obj: Record<string, any> = {}
         try {
             const apiBaseParams = await this.api.getBaseParams()
             Object.assign(obj, apiBaseParams);
             Object.assign(obj, this.getRequestParam(this.request.params))
+            const baseURL = await this.getBaseURL()
+            obj.baseUrl = baseURL
             return obj
         }
         catch (err) {

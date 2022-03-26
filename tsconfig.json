@@ -14,7 +14,9 @@
     //"sourceMap": true,
     "baseUrl": ".",
     "types": [
-      "webpack-env"
+      "webpack-env",
+      //"@nuxt/types",
+      //"@types/nuxtjs_auth"
     ],
     "paths": {
       "@/*": [

@@ -8,6 +8,7 @@
         <img class="ml-2" height="30" alt="Company logo" src="/logo.png" />
         <q-item>
           {{site.title}}
+          {{header}}
         </q-item>
         </a>
         <div q-pa-md class="action-buttons ml-auto gt-xs header-link" >
@@ -99,7 +100,9 @@ export default {
       this.auth.signUp();
     },
     login() {
-      this.auth.logIn();
+      this.$router.push({
+        name: "SignIn"
+      });
     },
     logout() {
       this.auth.logout();

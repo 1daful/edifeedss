@@ -1,7 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <div> {{site.title}} </div>
-    <SiteHeader v-if="site.data" :site="site.data"></SiteHeader>
+    <SiteHeader v-if="header" :site="site"></SiteHeader>
 
     <!--<SiteNav></SiteNav>-->
 
@@ -14,28 +13,38 @@
 <script>
 
 import SiteHeader from "./components/SiteHeader";
+import site from "../public/config.json";
 //import SiteNav from "./components/SiteNav";
 
-import { Axiosi } from "./api/Axiosi";
+//import { Axiosi } from "./api/Axiosi";
 
-const axiosi = new Axiosi();
-let site = {}
+//const axiosi = new Axiosi();
 
 export default {
   name: 'LayoutDefault',
   data() {
     return {
-      site
+      site: site
+    }
+  },
+  computed: {
+    header() {
+      let header = false
+      let noHeader = this.$route.meta.noHeader
+      if (noHeader){
+        return header
+      }
+      else {
+        header = true
+      }
+      return header
     }
   },
   components: {
-    SiteHeader,
+    SiteHeader
     //SiteNav
-  },
+  }/*,
   mounted() {
-    axiosi.load('./config.json').then(site => {
-      this.site = site
-    })
-  }
+  }*/
 }
 </script>

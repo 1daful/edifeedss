@@ -2,9 +2,9 @@
   <div class="q-pa-md">
     <div class="q-gutter-y-md">
         <q-card id="profile-header">
-            <h3> {{$auth.user.name}} </h3>
+            <h3> {{user.name}} </h3>
             <q-avatar @click="uploadPic">
-              <q-img :src="$auth.user.picture" />
+              <q-img :src="user.picture" />
             </q-avatar>
 
           <q-tabs v-model="tab" dense active-color="primary" indicator-color="primary" align="justify" narrow-indicator class="text-grey">
@@ -28,13 +28,28 @@
 </template>
 
 <script>
-import Collection from "../components/Collection";
+import Collection from "../components/Collection.vue";
 import UserDetails from '@/components/UserDetails.vue';
+import auth from "../api/auth/SupabaseAuth"
+
+let userInfo = auth.startSession()
 export default {
   name: 'Profile',
+  data() {
+    return {
+    auth,
+    user: {
+      name: userInfo.user_metadata.user_name || "User",
+      picture: userInfo.user_metadata.picture || "W"
+    }
+    }
+  },
   components: {
      Collection,
      UserDetails
+  },
+  mounted() {
+    console.log("user: ", this.user)
   }
 }
 </script>

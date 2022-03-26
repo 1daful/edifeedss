@@ -3,7 +3,7 @@ import { IMediaApi } from "../api/IMediaApi";
 import { Media } from "./Media";
 import { PaperQuotes } from "../api/quotes/PaperQuotes";
 import { TheySaidSo } from "../api/quotes/Theysaidso";
-import { BookFormat } from "@/apiReqFormat/BookFormat";
+//import { BookFormat } from "@/apiReqFormat/BookFormat";
 import { ZenQuotes } from "@/api/quotes/ZenQuotes";
 import { NetworkLocal } from "@/api/network";
 export class QuoteMedia implements IMedia {
@@ -13,7 +13,7 @@ export class QuoteMedia implements IMedia {
     theySaidSo: IMediaApi;
     //paperQuotes: IMediaApi;
     zenQuotes: IMediaApi;
-    bookFormat: BookFormat = new BookFormat()
+    //bookFormat: BookFormat = new BookFormat()
 
     constructor() {
         //this.paperQuotes = new PaperQuotes();

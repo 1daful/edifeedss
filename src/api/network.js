@@ -5,9 +5,9 @@ export class NetworkLocal {
     constructor() {
         this.os = require('os');
     }
-    static test(message) {
+    static test(message, msg) {
         if (!this.isLoopback(window.location.origin)) {
-            console.log("Message from the world: ", message);
+            console.log(message, msg);
             console.log("Network offline:");
             console.log(this.dummyData);
             return this.dummyData;

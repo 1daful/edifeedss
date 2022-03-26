@@ -39,7 +39,7 @@ export class TheySaidSo implements IMediaApi{
             author: '',
             categories: '',
             images: '',
-            authors: this.apiFormat.author,
+            //authors: this.apiFormat.author,
             random: ''
         }
     },

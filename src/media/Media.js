@@ -1,6 +1,6 @@
 import { MediaApi } from "../api/MediaApi.js";
 import { Repository } from "../model/Repository.js";
-import { NetworkLocal } from "@/api/network.js";
+//import { NetworkLocal } from "@/api/network.js";
 /**
  * Class Media acts as delegates for the media class instances' functions.
  * @function load
@@ -18,20 +18,20 @@ export class Media {
      * @param params
      */
     async load(type, media, params) {
-        const mediaItems = [];
-        const result = {};
+        //const mediaItems: Record<string, any>[] = [];
+        //const result: Record<string, any> = {}
         try {
             for (const api of media.apis) {
                 const mediaApi = new MediaApi(api);
                 //mediaItems.push(mediaApi.getItems(type, params));
-                const name = mediaApi.api.constructor.name;
-                NetworkLocal.test(`${name} good!`);
-                let item = [];
-                item = await mediaApi.getItems(type, params);
-                if (typeof item === "object") {
-                    NetworkLocal.test(`This is item from Media load. ${item}`);
-                    console.log("this is item from Media load: ", item);
-                    await this.addItems(/*media.constructor.name*/ item);
+                //const name = mediaApi.api.constructor.name;
+                //NetworkLocal.test(`${name} good!`)
+                let items = [];
+                items = await mediaApi.getItems(type, params);
+                if (items) {
+                    //NetworkLocal.test(`This is item from Media load. ${items}`)
+                    //console.log("this is item from Media load: ", items)
+                    await this.addItems(/*media.constructor.name*/ items);
                 }
             }
         }
@@ -50,7 +50,7 @@ export class Media {
     async addItems(items) {
         const result = {};
         try {
-            NetworkLocal.test("Adding items from Media");
+            //NetworkLocal.test("Adding items from Media")
             await this.repository.addItems(items);
         }
         catch (err) {
@@ -60,19 +60,15 @@ export class Media {
         return result;
     }
     async readItems(params, op) {
-        const result = [];
+        let result = [];
         try {
-            const res = [];
-            await res.push(NetworkLocal.test("Reading items from Media"));
-            if (res) {
-                return res;
-            }
-            return await this.repository.readItems(params, op);
+            result = await this.readItems(params, op);
+            return result;
         }
         catch (err) {
             console.log(err);
+            console.log("Unable to load media");
         }
-        console.log("Unable to load media");
         return result;
     }
 }

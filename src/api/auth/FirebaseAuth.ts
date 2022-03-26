@@ -1,6 +1,8 @@
 import config from "../../firebase.json";
 import {initializeApp} from "firebase/app";
-import { initializeAuth,indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence, GoogleAuthProvider,FacebookAuthProvider, TwitterAuthProvider, signInWithRedirect, AuthProvider, EmailAuthProvider, browserPopupRedirectResolver, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, applyActionCode, sendPasswordResetEmail, verifyBeforeUpdateEmail, User, signInWithEmailAndPassword, reauthenticateWithCredential, AuthCredential, updatePassword, deleteUser, linkWithRedirect, getRedirectResult, fetchSignInMethodsForEmail, SignInMethod, signInWithCredential} from "firebase/auth";
+import { initializeAuth,indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence, GoogleAuthProvider,FacebookAuthProvider, TwitterAuthProvider, signInWithRedirect, AuthProvider, EmailAuthProvider, browserPopupRedirectResolver, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, applyActionCode, sendPasswordResetEmail, verifyBeforeUpdateEmail, User, signInWithEmailAndPassword, reauthenticateWithCredential, AuthCredential, updatePassword, deleteUser, linkWithRedirect, getRedirectResult, fetchSignInMethodsForEmail, SignInMethod, signInWithCredential, linkWithCredential, getIdToken, setPersistence} from "firebase/auth";
+import * as firebaseui from "firebaseui";
+
 //import { provide } from "vue";
 /*import "firebase/analytics";
 import "firebase/auth";
@@ -16,12 +18,9 @@ import "firebase/storage";*/
 export class FirebaseAuth implements Auth {
 constructor() {
     //this.storage = this.app.storage(url);
-    this.auth.onAuthStateChanged((user) => {
-            if (user) {
-                this.user = user;
-            }
-        });
+    console.log(firebaseui.auth)
 }
+
     log!: Record<string, any>;
     authMessage = {
         sentEmail: '',
@@ -35,19 +34,86 @@ constructor() {
     }
 
     app = initializeApp(config);
-    provider?: AuthProvider
+    //provider?: AuthProvider
 
     auth = initializeAuth(this.app,  {persistence: [indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence]})
     user = this.auth.currentUser
+    GOOGLE_Id = GoogleAuthProvider.PROVIDER_ID
+    FACEBOOK_ID =FacebookAuthProvider.PROVIDER_ID
+    TWITTER_ID = TwitterAuthProvider.PROVIDER_ID
     //analytics  = this.app.analytics();
     //firestore = this.app.firestore();
     //storage: firebase.storage.Storage;
 
-    async login(provider?: AuthProvider, credentials?: Record<string, any>) {
-        let log: Record<string, any> = {};
+    getUi() {
+        if (firebaseui.auth.AuthUI.getInstance()) {
+            return firebaseui.auth.AuthUI.getInstance()
+        }
+        else {
+             return new firebaseui.auth.AuthUI(this.auth)
+        }
+    }
+    ui = this.getUi()
+    uiConfig = {
+        signInOptions: [
+            {
+                provider: GoogleAuthProvider.PROVIDER_ID,
+                scopes: [
+                    'https://www.googleapis.com/auth/contacts.readonly'
+                ],
+                customParameters: {
+                    // Forces account selection even when one account
+                    // is available.
+                    prompt: 'select_account'}
+                },
+                {
+                    provider: FacebookAuthProvider.PROVIDER_ID,
+                    scopes: [
+                        'public_profile',
+                        'email'
+                    ],
+                    customParameters: {
+                        // Forces password re-entry.
+                        auth_type: 'reauthenticate'
+                    }
+                },
+        TwitterAuthProvider.PROVIDER_ID, // Twitter does not support scopes.
+        EmailAuthProvider.PROVIDER_ID // Other providers don't need to be given as object.
+    ]
+    }
+    startUI() {
+        if(this.ui)
+        this.ui.start('#auth-ui', this.uiConfig);
+    }
+
+    async login(providerId?: string, credentials?: Record<string, any>) {
+        let provider: AuthProvider = new GoogleAuthProvider;
+        const log: Record<string, any> = {};
         let signUpErrMsg: string = '';
-        if (provider){
+        if (providerId){
+            switch (providerId) {
+                case "google":
+                    provider = new GoogleAuthProvider();
+                    break;
+
+                case "facebook":
+                    provider = new FacebookAuthProvider();
+                    break;
+
+                case "twitter":
+                    provider = new TwitterAuthProvider()
+                    break;
+            
+                default:
+                    break;
+            }
+            if (provider)
+            setPersistence(this.auth, browserSessionPersistence)
             signInWithRedirect(this.auth, provider, browserPopupRedirectResolver)
+            .catch(error => {
+                console.log(error)
+                console.log(error.code, error.message)
+            })
         }
         else if (credentials) {
             signInWithEmailAndPassword(this.auth, credentials.email, credentials.password)
@@ -68,6 +134,8 @@ constructor() {
                 default:
                     break;
             }
+
+            console.log(error.code, error.message)
             });
         }
         this.authMessage.signUpErrMsg = signUpErrMsg;
@@ -80,7 +148,7 @@ constructor() {
 
     signUp(email: string, password: string, param: object) {
         let signUpErrMsg: string = '';
-        let log: Record<string, any> = {};
+
         createUserWithEmailAndPassword(this.auth, email,password).then((userCredential) => {
             const user = userCredential.user
             updateProfile(user, param);
@@ -91,8 +159,8 @@ constructor() {
             //applyActionCode(auth, code);
         })
         .catch((error) =>{
-            log.errorCode = error.code;
-            log.errorMessage = error.message;
+            this.log.errorCode = error.code;
+            this.log.errorMessage = error.message;
             this.authMessage.failed = true;
 
         switch (error.code) {
@@ -112,26 +180,30 @@ constructor() {
                 break;
         }
         })
-        this.log = log;
         this.authMessage.signUpErrMsg = signUpErrMsg;
     }
 
-    getUser() {
-
+    async getUser() : Promise<User | null> {
+        this.auth.onAuthStateChanged((user) => {
+            console.log(user, " logged out")
+            if (user) {
+                this.user = user;
+                console.log("this.onauthchanged:", this.user)
+            }
+            return user
+        });
+        return this.auth.currentUser
     }
 
     
     sendPasswordResetEmail(email: string) {
-        let log: Record<string, any> = {};
-        let resetPassword = '';
         sendPasswordResetEmail(this.auth, email).then(() =>{
            
         this.authMessage.resetPassword = 'Password reset link has been sent to your email address. Check your inbox.'
         }).catch((error) => {
-                log.errorCode = error.code;
-                log.errorMessage = error.message;
+                this.log.errorCode = error.code;
+                this.log.errorMessage = error.message;
             });
-        this.log = log;
     }
     
     updateEmail(email: string) {
@@ -159,7 +231,7 @@ constructor() {
         })
     }
     updateProfile(user: User, filters: Record<string, any>) {
-        let log: Record<string, any> = {};
+        const log: Record<string, any> = {};
         //let updateProfile: string = ''
         if (this.user){
             updateProfile(user, filters).then(() =>{
@@ -173,7 +245,7 @@ constructor() {
     }
 
     async sendEmailVerification(user: User) {
-        let log: Record<string, any> = {};
+        const log: Record<string, any> = {};
         let sentEmail: string = '';
         sendEmailVerification(user).then(function(){
             sentEmail = 'Verification link has been sent to your email address. Please check your inbox';
@@ -187,7 +259,7 @@ constructor() {
     }
 
     deleteUser(user: User) {
-        let log: Record<string, any> = {};
+        const log: Record<string, any> = {};
         //let deleteUser = '';
         deleteUser(user).then(() => {
         this.authMessage.deleteUser =  'Account deleted successfully'
@@ -204,26 +276,45 @@ constructor() {
         }
         return false
     }
-    linkWithRedirect(user: User) {
-        if (this.user && this.provider) {
-            linkWithRedirect(this.user, this.provider)
-            .then(/* ... */)
-            .catch(/* ... */);
-        }
-    }
 
-    getResult() {
+    async getResult() {
+        let user
         getRedirectResult(this.auth, browserPopupRedirectResolver)
-        .then((userCredential) => {
-            userCredential
+        .then(async (userCredential) => {
+            if (userCredential) {
+            user = userCredential?.user
+            userCredential?.providerId
+            //const idToken = await getIdToken(user)
+            /*switch () {
+                case value:
+                    
+                    break;
+            
+                default:
+                    break;
+            }*/
+            //const credential = GoogleAuthProvider.credential(idToken)
+            
+            /*sessionStorage.setItem()
+            sessionStorage.getItem()*/
+
+            //linkWithCredential(user, credential)
+            }
         })
         .catch((error) => {
             switch(error.code) {
                 case "auth/acount-exists-with-different-credential" :
-                    return fetchSignInMethodsForEmail(this.auth, error.email)
+                    fetchSignInMethodsForEmail(this.auth, error.email).then((provider) => {
+                        sessionStorage.setItem("provider", provider[0])
+                    })
+                    break
                 case "auth/credential-already-in-use" :
                     signInWithCredential(this.auth, error.credential)
+                    break
+                default:
+                    break
             }
         })
+        return user
     }
 }

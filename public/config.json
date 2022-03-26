@@ -1,7 +1,26 @@
 {
     "title": "Edifeeds",
     "baseUrl": "/",
-    "logo": "images/ed.png",
+    "backURL": "http://localhost:8081/api/v1",
+    "logo": "../logo.png",
+
+    "socials": [
+        {
+            "id": "Google",
+            "icon": "mdi-google"
+        },
+
+        {
+            "id": "Facebook",
+            "icon": "mdi-facebook"
+        },
+
+        {
+            "id": "Twitter",
+            "icon": "mdi-twitter"
+        }
+    ],
+
     "contacts": [
         {
         "name":"facebook",
@@ -141,6 +160,14 @@
             "realm": "edifeeds",
             "clientId": "edifeeds-app",
             "onLoad": "login-required"
+        },
+        "Supabase" : {
+            "url": "https://apqaaxxhxzihzszhpelk.supabase.co",
+            "key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwcWFheHhoeHppaHpzemhwZWxrIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDQ1NzUyNjQsImV4cCI6MTk2MDE1MTI2NH0.tAPoGJ3nWeh5PQH51nWf4Ekdr9c5G-dhkljTmdAHVYg"
+        },
+        "SuperTokens" : {
+            "apiDomain": "",
+            "key": ""
         }
     },
     "genres": {},

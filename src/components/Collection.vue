@@ -30,7 +30,7 @@
 import { Repository } from "../model/Repository";
 import {  } from "./MediaComponent";
 
-let repository = new Repository();
+let repository = new Repository('collection');
 export default {
     name: 'Collection',
     data() {

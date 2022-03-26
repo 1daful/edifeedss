@@ -16,7 +16,8 @@ export class Axiosi {
             }*/
             const baseUrl = await this.resource.getBaseURL();
             //console.log('Axios baseUrl:', baseUrl)
-            this.config.params = this.resource.getBaseParam();
+            this.config.params = await this.resource.getBaseParam();
+            NetworkLocal.test("Axios config: ", this.config.params);
             if (baseUrl) {
                 const response = await axios.get(baseUrl, this.config)
                     .catch((error) => {
